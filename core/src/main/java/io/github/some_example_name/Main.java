@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.audio.Sound;
@@ -31,6 +33,11 @@ public class Main extends ApplicationAdapter {
 
     Sprite bucketSprite;
     Vector2 touchPos = new Vector2();
+    Array<Sprite> dropSprites;
+    Rectangle bucketRectangle;
+    Rectangle dropRectangle;
+
+    float dropTimer;
 
     @Override
     public void create() {
@@ -44,11 +51,20 @@ public class Main extends ApplicationAdapter {
         dropTexture = new Texture("drop.png");
         bucketSprite = new Sprite(bucketTexture);
         bucketSprite.setSize(1, 1);
+        bucketRectangle = new Rectangle();
+        dropRectangle = new Rectangle();
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
 
         touchPos = new Vector2();
+        dropSprites = new Array<Sprite>();
+
+        createDroplet();
+
+        music.setLooping(true);
+        music.setVolume(.5f);
+        music.play();
     }
 
     @Override
@@ -92,12 +108,37 @@ public class Main extends ApplicationAdapter {
     }
 
     private void logic() {
-        // Store the worldWidth and worldHeight as local variables for brevity
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
+        float bucketWidth = bucketSprite.getWidth();
+        float bucketHeight = bucketSprite.getHeight();
 
-        // Clamp x to values between 0 and worldWidth
-        bucketSprite.setX(MathUtils.clamp(bucketSprite.getX(), 0, worldWidth));
+        bucketSprite.setX(MathUtils.clamp(bucketSprite.getX(), 0, worldWidth - bucketWidth));
+
+        float delta = Gdx.graphics.getDeltaTime();
+        bucketRectangle.set(bucketSprite.getX(), bucketSprite.getY(), bucketWidth, bucketHeight);
+
+        for (int i = dropSprites.size - 1; i >= 0; i--) {
+            Sprite dropSprite = dropSprites.get(i);
+            float dropWidth = dropSprite.getWidth();
+            float dropHeight = dropSprite.getHeight();
+
+            dropSprite.translateY(-2f * delta);
+            dropRectangle.set(dropSprite.getX(), dropSprite.getY(), dropWidth, dropHeight);
+
+            if (dropSprite.getY() < -dropHeight)
+                dropSprites.removeIndex(i);
+            else if (bucketRectangle.overlaps(dropRectangle)) {
+                dropSprites.removeIndex(i);
+                dropSound.play(); // Play the sound
+            }
+        }
+
+        dropTimer += delta;
+        if (dropTimer > 1f) {
+            dropTimer = 0;
+            createDroplet();
+        }
     }
 
     private void draw() {
@@ -112,6 +153,29 @@ public class Main extends ApplicationAdapter {
         batch.draw(backgroundTexture, 0, 0, worldWidth, worldHeight);
         bucketSprite.draw(batch);
 
+        for (Sprite dropSprite : dropSprites) {
+            dropSprite.draw(batch);
+        }
+
         batch.end();
+    }
+
+    private void createDroplet() {
+        float dropWidth = 1;
+        float dropHeight = 1;
+        float worldWidth = viewport.getWorldWidth();
+        float worldHeight = viewport.getWorldHeight();
+
+        Sprite dropSprite = new Sprite(dropTexture);
+        dropSprite.setSize(dropWidth, dropHeight);
+        dropSprite.setX(MathUtils.random(0f, worldWidth - dropWidth));
+        dropSprite.setY(worldHeight);
+        dropSprites.add(dropSprite);
+    }
+
+    @Override
+    public void pause() {
+        // TODO Auto-generated method stub
+        super.pause();
     }
 }
