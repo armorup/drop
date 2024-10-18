@@ -6,6 +6,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.audio.Sound;
@@ -28,6 +30,7 @@ public class Main extends ApplicationAdapter {
     Music music;
 
     Sprite bucketSprite;
+    Vector2 touchPos = new Vector2();
 
     @Override
     public void create() {
@@ -44,6 +47,8 @@ public class Main extends ApplicationAdapter {
 
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+
+        touchPos = new Vector2();
     }
 
     @Override
@@ -75,10 +80,24 @@ public class Main extends ApplicationAdapter {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
             bucketSprite.translateX(speed * delta);
+        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            bucketSprite.translateX(-speed * delta);
+        }
+
+        if (Gdx.input.isTouched()) {
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY()); // Get where the touch happened on screen
+            viewport.unproject(touchPos); // Convert the units to the world units of the viewport
+            bucketSprite.setCenterX(touchPos.x); // Change the horizontally centered position of the bucket
         }
     }
 
     private void logic() {
+        // Store the worldWidth and worldHeight as local variables for brevity
+        float worldWidth = viewport.getWorldWidth();
+        float worldHeight = viewport.getWorldHeight();
+
+        // Clamp x to values between 0 and worldWidth
+        bucketSprite.setX(MathUtils.clamp(bucketSprite.getX(), 0, worldWidth));
     }
 
     private void draw() {
