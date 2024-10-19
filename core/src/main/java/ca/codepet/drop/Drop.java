@@ -1,4 +1,4 @@
-package io.github.some_example_name;
+package ca.codepet.drop;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;

@@ -1,4 +1,4 @@
-package io.github.some_example_name;
+package ca.codepet.drop;
 
 import java.util.Iterator;
 
@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -20,11 +19,11 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.assets.AssetManager;
 
 public class GameScreen implements Screen {
-  final Drop game;
+  final Drop game; // Reference to the Game
 
   AssetManager assetManager;
   OrthographicCamera camera;
-  Array<Rectangle> raindrops;
+  Array<Sprite> raindrops;
   long lastDropTime;
   int dropsGathered;
 
@@ -57,11 +56,7 @@ public class GameScreen implements Screen {
     assetManager.finishLoading();
 
     // Retrieve the loaded assets
-    Texture dropImage = assetManager.get("drop.png", Texture.class);
     Texture bucketImage = assetManager.get("bucket.png", Texture.class);
-    Texture backgroundImage = assetManager.get("background.png", Texture.class);
-    Sound dropSound = assetManager.get("drop.mp3", Sound.class);
-    Music rainMusic = assetManager.get("music.mp3", Music.class);
 
     // Set up the bucket sprite
     bucketSprite = new Sprite(bucketImage);
@@ -69,6 +64,7 @@ public class GameScreen implements Screen {
     bucketSprite.setPosition(800 / 2 - 64 / 2, 20); // Initial position
 
     // Start the background music
+    Music rainMusic = assetManager.get("music.mp3", Music.class);
     rainMusic.setLooping(true);
     rainMusic.play();
 
@@ -77,12 +73,11 @@ public class GameScreen implements Screen {
   }
 
   private void spawnRaindrop() {
-    Rectangle raindrop = new Rectangle();
-    raindrop.x = MathUtils.random(0, 800 - 64);
-    raindrop.y = 480;
-    raindrop.width = 64;
-    raindrop.height = 64;
-    raindrops.add(raindrop);
+    Texture dropImage = assetManager.get("drop.png", Texture.class);
+    Sprite raindropSprite = new Sprite(dropImage); // Create a new Sprite for the raindrop
+    raindropSprite.setSize(64, 64); // Set size
+    raindropSprite.setPosition(MathUtils.random(0, 800 - 64), 480); // Set initial position
+    raindrops.add(raindropSprite); // Add the Sprite to the array
     lastDropTime = TimeUtils.nanoTime();
   }
 
@@ -101,10 +96,9 @@ public class GameScreen implements Screen {
     // Draw the bucket sprite
     bucketSprite.draw(game.batch);
 
-    // Draw all raindrops
-    Texture dropImage = assetManager.get("drop.png", Texture.class);
-    for (Rectangle raindrop : raindrops) {
-      game.batch.draw(dropImage, raindrop.x, raindrop.y);
+    // Draw all raindrop sprites
+    for (Sprite raindrop : raindrops) {
+      raindrop.draw(game.batch);
     }
     game.batch.end();
 
@@ -142,14 +136,14 @@ public class GameScreen implements Screen {
     if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
       spawnRaindrop();
 
-    Iterator<Rectangle> iter = raindrops.iterator();
+    Iterator<Sprite> iter = raindrops.iterator();
     Sound dropSound = assetManager.get("drop.mp3", Sound.class);
     while (iter.hasNext()) {
-      Rectangle raindrop = iter.next();
-      raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-      if (raindrop.y + 64 < 0)
+      Sprite raindrop = iter.next();
+      raindrop.translateY(-200 * Gdx.graphics.getDeltaTime()); // Move the raindrop down
+      if (raindrop.getY() + raindrop.getHeight() < 0)
         iter.remove();
-      if (raindrop.overlaps(bucketSprite.getBoundingRectangle())) {
+      if (raindrop.getBoundingRectangle().overlaps(bucketSprite.getBoundingRectangle())) {
         dropsGathered++;
         dropSound.play();
         iter.remove();
@@ -159,23 +153,26 @@ public class GameScreen implements Screen {
 
   @Override
   public void resize(int width, int height) {
+    // Handle resizing if needed
   }
 
   @Override
   public void hide() {
+    // Handle hide if needed
   }
 
   @Override
   public void pause() {
+    // Handle pause if needed
   }
 
   @Override
   public void resume() {
+    // Handle resume if needed
   }
 
   @Override
   public void dispose() {
-    // Dispose the asset manager which will dispose all loaded assets
     assetManager.dispose();
   }
 }
