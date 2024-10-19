@@ -21,7 +21,7 @@ public class MainMenuScreen implements Screen {
   @Override
   public void show() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'show'");
+    // throw new UnsupportedOperationException("Unimplemented method 'show'");
   }
 
   @Override
@@ -45,33 +45,31 @@ public class MainMenuScreen implements Screen {
   @Override
   public void resize(int width, int height) {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'resize'");
+    // throw new UnsupportedOperationException("Unimplemented method 'resize'");
   }
 
   @Override
   public void pause() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'pause'");
+    // throw new UnsupportedOperationException("Unimplemented method 'pause'");
   }
 
   @Override
   public void resume() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'resume'");
+    // throw new UnsupportedOperationException("Unimplemented method 'resume'");
   }
 
   @Override
   public void hide() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'hide'");
+    // throw new UnsupportedOperationException("Unimplemented method 'hide'");
   }
 
   @Override
   public void dispose() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+    // throw new UnsupportedOperationException("Unimplemented method 'dispose'");
   }
-
-  // ...Rest of class omitted for succinctness.
 
 }

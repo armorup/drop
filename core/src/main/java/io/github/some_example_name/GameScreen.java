@@ -7,8 +7,10 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -21,42 +23,41 @@ public class GameScreen implements Screen {
 
   Texture dropImage;
   Texture bucketImage;
+  Texture backgroundImage;
   Sound dropSound;
   Music rainMusic;
   OrthographicCamera camera;
-  Rectangle bucket;
   Array<Rectangle> raindrops;
   long lastDropTime;
   int dropsGathered;
 
+  Sprite bucketSprite;
+
   public GameScreen(final Drop game) {
     this.game = game;
 
-    // load the images for the droplet and the bucket, 64x64 pixels each
-    dropImage = new Texture(Gdx.files.internal("droplet.png"));
+    // Load the images for the droplet and the bucket, 64x64 pixels each
+    dropImage = new Texture(Gdx.files.internal("drop.png"));
     bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+    backgroundImage = new Texture(Gdx.files.internal("background.png"));
 
-    // load the drop sound effect and the rain background "music"
-    dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-    rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
+    // Load the drop sound effect and the rain background "music"
+    dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
+    rainMusic = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
     rainMusic.setLooping(true);
 
-    // create the camera and the SpriteBatch
+    // Create the camera
     camera = new OrthographicCamera();
     camera.setToOrtho(false, 800, 480);
 
-    // create a Rectangle to logically represent the bucket
-    bucket = new Rectangle();
-    bucket.x = 800 / 2 - 64 / 2; // center the bucket horizontally
-    bucket.y = 20; // bottom left corner of the bucket is 20 pixels above
-                   // the bottom screen edge
-    bucket.width = 64;
-    bucket.height = 64;
+    // Create the bucket sprite
+    bucketSprite = new Sprite(bucketImage);
+    bucketSprite.setSize(100, 100); // Set size to match the original Rectangle size
+    bucketSprite.setPosition(800 / 2 - 64 / 2, 20); // Set initial position
 
-    // create the raindrops array and spawn the first raindrop
-    raindrops = new Array<Rectangle>();
+    // Create the raindrops array and spawn the first raindrop
+    raindrops = new Array<>();
     spawnRaindrop();
-
   }
 
   private void spawnRaindrop() {
@@ -71,61 +72,58 @@ public class GameScreen implements Screen {
 
   @Override
   public void render(float delta) {
-    // clear the screen with a dark blue color. The
-    // arguments to clear are the red, green
-    // blue and alpha component in the range [0,1]
-    // of the color to be used to clear the screen.
-    ScreenUtils.clear(0, 0, 0.2f, 1);
+    ScreenUtils.clear(Color.BLACK);
 
-    // tell the camera to update its matrices.
+    // Update the camera
     camera.update();
 
-    // tell the SpriteBatch to render in the
-    // coordinate system specified by the camera.
+    // Set the SpriteBatch to use the camera's coordinate system
     game.batch.setProjectionMatrix(camera.combined);
 
-    // begin a new batch and draw the bucket and
-    // all drops
+    // Begin a new batch and draw the background, text, and raindrops
     game.batch.begin();
+    game.batch.draw(backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
     game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
-    game.batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
+
+    // Draw the bucket sprite
+    bucketSprite.draw(game.batch);
+
+    // Draw all raindrops
     for (Rectangle raindrop : raindrops) {
       game.batch.draw(dropImage, raindrop.x, raindrop.y);
     }
     game.batch.end();
 
-    // process user input
+    // Process user input
     if (Gdx.input.isTouched()) {
       Vector3 touchPos = new Vector3();
       touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
       camera.unproject(touchPos);
-      bucket.x = touchPos.x - 64 / 2;
+      bucketSprite.setX(touchPos.x - bucketSprite.getWidth() / 2);
     }
     if (Gdx.input.isKeyPressed(Keys.LEFT))
-      bucket.x -= 200 * Gdx.graphics.getDeltaTime();
+      bucketSprite.translateX(-200 * Gdx.graphics.getDeltaTime());
     if (Gdx.input.isKeyPressed(Keys.RIGHT))
-      bucket.x += 200 * Gdx.graphics.getDeltaTime();
+      bucketSprite.translateX(200 * Gdx.graphics.getDeltaTime());
 
-    // make sure the bucket stays within the screen bounds
-    if (bucket.x < 0)
-      bucket.x = 0;
-    if (bucket.x > 800 - 64)
-      bucket.x = 800 - 64;
+    // Ensure the bucket stays within the screen bounds
+    if (bucketSprite.getX() < 0)
+      bucketSprite.setX(0);
+    if (bucketSprite.getX() > 800 - bucketSprite.getWidth())
+      bucketSprite.setX(800 - bucketSprite.getWidth());
 
-    // check if we need to create a new raindrop
+    // Check if we need to spawn a new raindrop
     if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
       spawnRaindrop();
 
-    // move the raindrops, remove any that are beneath the bottom edge of
-    // the screen or that hit the bucket. In the later case we increase the
-    // value our drops counter and add a sound effect.
+    // Move the raindrops and handle collisions
     Iterator<Rectangle> iter = raindrops.iterator();
     while (iter.hasNext()) {
       Rectangle raindrop = iter.next();
       raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
       if (raindrop.y + 64 < 0)
         iter.remove();
-      if (raindrop.overlaps(bucket)) {
+      if (raindrop.overlaps(bucketSprite.getBoundingRectangle())) {
         dropsGathered++;
         dropSound.play();
         iter.remove();
@@ -139,8 +137,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void show() {
-    // start the playback of the background music
-    // when the screen is shown
+    // Start the playback of the background music
     rainMusic.play();
   }
 
@@ -163,5 +160,4 @@ public class GameScreen implements Screen {
     dropSound.dispose();
     rainMusic.dispose();
   }
-
 }
