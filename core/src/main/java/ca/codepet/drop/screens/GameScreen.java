@@ -1,4 +1,4 @@
-package ca.codepet.drop;
+package ca.codepet.drop.screens;
 
 import java.util.Iterator;
 
@@ -16,6 +16,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
+
+import ca.codepet.drop.Drop;
+
 import com.badlogic.gdx.assets.AssetManager;
 
 public class GameScreen implements Screen {
@@ -36,11 +39,11 @@ public class GameScreen implements Screen {
     assetManager = new AssetManager();
 
     // Queue assets for loading
-    assetManager.load("drop.png", Texture.class);
-    assetManager.load("bucket.png", Texture.class);
-    assetManager.load("background.png", Texture.class);
-    assetManager.load("drop.mp3", Sound.class);
-    assetManager.load("music.mp3", Music.class);
+    assetManager.load("images/drop.png", Texture.class);
+    assetManager.load("images/bucket.png", Texture.class);
+    assetManager.load("images/background.png", Texture.class);
+    assetManager.load("audio/drop.mp3", Sound.class);
+    assetManager.load("audio/music.mp3", Music.class);
 
     // Create the camera
     camera = new OrthographicCamera();
@@ -56,7 +59,7 @@ public class GameScreen implements Screen {
     assetManager.finishLoading();
 
     // Retrieve the loaded assets
-    Texture bucketImage = assetManager.get("bucket.png", Texture.class);
+    Texture bucketImage = assetManager.get("images/bucket.png", Texture.class);
 
     // Set up the bucket sprite
     bucketSprite = new Sprite(bucketImage);
@@ -64,7 +67,7 @@ public class GameScreen implements Screen {
     bucketSprite.setPosition(800 / 2 - 64 / 2, 20); // Initial position
 
     // Start the background music
-    Music rainMusic = assetManager.get("music.mp3", Music.class);
+    Music rainMusic = assetManager.get("audio/music.mp3", Music.class);
     rainMusic.setLooping(true);
     rainMusic.play();
 
@@ -73,7 +76,7 @@ public class GameScreen implements Screen {
   }
 
   private void spawnRaindrop() {
-    Texture dropImage = assetManager.get("drop.png", Texture.class);
+    Texture dropImage = assetManager.get("images/drop.png", Texture.class);
     Sprite raindropSprite = new Sprite(dropImage); // Create a new Sprite for the raindrop
     raindropSprite.setSize(64, 64); // Set size
     raindropSprite.setPosition(MathUtils.random(0, 800 - 64), 480); // Set initial position
@@ -89,7 +92,7 @@ public class GameScreen implements Screen {
 
     // Begin a new batch and draw the background, text, and raindrops
     game.batch.begin();
-    Texture backgroundImage = assetManager.get("background.png", Texture.class);
+    Texture backgroundImage = assetManager.get("images/background.png", Texture.class);
     game.batch.draw(backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
     game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
 
@@ -137,7 +140,7 @@ public class GameScreen implements Screen {
       spawnRaindrop();
 
     Iterator<Sprite> iter = raindrops.iterator();
-    Sound dropSound = assetManager.get("drop.mp3", Sound.class);
+    Sound dropSound = assetManager.get("audio/drop.mp3", Sound.class);
     while (iter.hasNext()) {
       Sprite raindrop = iter.next();
       raindrop.translateY(-200 * Gdx.graphics.getDeltaTime()); // Move the raindrop down

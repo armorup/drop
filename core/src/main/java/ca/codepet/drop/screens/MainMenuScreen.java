@@ -1,9 +1,11 @@
-package ca.codepet.drop;
+package ca.codepet.drop.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
+
+import ca.codepet.drop.Drop;
 
 public class MainMenuScreen implements Screen {
 
