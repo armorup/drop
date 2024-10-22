@@ -1,0 +1,8 @@
+audio/drop.mp3
+audio/music.mp3
+fonts/Play-Bold.ttf
+fonts/Play-Regular.ttf
+images/background.png
+images/bucket.png
+images/drop.png
+images/libgdx.png
